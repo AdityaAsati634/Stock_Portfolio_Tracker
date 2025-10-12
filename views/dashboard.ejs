@@ -1,0 +1,413 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - Stock Tracker</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="/css/style.css">
+    <style>
+        .chart-container {
+            position: relative;
+            height: 400px;
+            width: 100%;
+        }
+        .profit-positive {
+            color: #28a745;
+            font-weight: bold;
+        }
+        .profit-negative {
+            color: #dc3545;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+        <div class="container">
+            <a class="navbar-brand" href="/portfolio/dashboard">Stock Tracker</a>
+            <div class="navbar-nav">
+                <a class="nav-link" href="/portfolio/add">Add Stock</a>
+                <a class="nav-link" href="/portfolio/Transactions">Transactions</a>
+                <a class="nav-link" href="/auth/logout">Logout</a>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container mt-4">
+        <h2>Your Portfolio</h2>
+        
+        <!-- Portfolio Summary -->
+        <% if (portfolio.length > 0) { %>
+        <div class="row mb-4">
+            <div class="col-md-3">
+                <div class="card text-center">
+                    <div class="card-body">
+                        <h5 class="card-title">Total Investment</h5>
+                        <p class="card-text">$<%= summary.totalInvestment.toFixed(2) %></p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card text-center">
+                    <div class="card-body">
+                        <h5 class="card-title">Current Value</h5>
+                        <p class="card-text">$<%= summary.totalCurrentValue.toFixed(2) %></p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card text-center">
+                    <div class="card-body">
+                        <h5 class="card-title">Total P&L</h5>
+                        <p class="card-text <%= summary.totalProfitLoss >= 0 ? 'profit-positive' : 'profit-negative' %>">
+                            $<%= summary.totalProfitLoss.toFixed(2) %>
+                        </p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="card text-center">
+                    <div class="card-body">
+                        <h5 class="card-title">Return</h5>
+                        <p class="card-text <%= summary.totalProfitLoss >= 0 ? 'profit-positive' : 'profit-negative' %>">
+                            <%= summary.profitLossPercent.toFixed(2) %>%
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <% } %>
+
+        <!-- Stock Price Chart Section - UPDATED WITH CATEGORIZED DROPDOWN -->
+        <div class="card mt-4 mb-4">
+            <div class="card-header">
+                <h3>Stock Price Chart</h3>
+            </div>
+            <div class="card-body">
+                <div class="row mb-3">
+                    <div class="col-md-6">
+                        <label for="stockSymbol" class="form-label">Select Stock Symbol</label>
+                        <select id="stockSymbol" class="form-select" onchange="loadStockChart()">
+                            <option value="">-- Select a Stock --</option>
+                            
+                            <optgroup label="🖥️ Technology">
+                                <option value="AAPL" selected>AAPL - Apple Inc.</option>
+                                <option value="MSFT">MSFT - Microsoft Corporation</option>
+                                <option value="GOOGL">GOOGL - Alphabet Inc. (Google)</option>
+                                <option value="META">META - Meta Platforms Inc.</option>
+                                <option value="NVDA">NVDA - NVIDIA Corporation</option>
+                                <option value="INTC">INTC - Intel Corporation</option>
+                                <option value="CSCO">CSCO - Cisco Systems</option>
+                                <option value="ORCL">ORCL - Oracle Corporation</option>
+                                <option value="IBM">IBM - International Business Machines</option>
+                            </optgroup>
+                            
+                            <optgroup label="🛒 E-commerce & Retail">
+                                <option value="AMZN">AMZN - Amazon.com Inc.</option>
+                                <option value="TSLA">TSLA - Tesla Inc.</option>
+                                <option value="WMT">WMT - Walmart Inc.</option>
+                                <option value="HD">HD - Home Depot Inc.</option>
+                                <option value="TGT">TGT - Target Corporation</option>
+                                <option value="COST">COST - Costco Wholesale</option>
+                            </optgroup>
+                            
+                            <optgroup label="💳 Finance & Banking">
+                                <option value="JPM">JPM - JPMorgan Chase & Co.</option>
+                                <option value="V">V - Visa Inc.</option>
+                                <option value="MA">MA - Mastercard Inc.</option>
+                                <option value="BAC">BAC - Bank of America</option>
+                                <option value="WFC">WFC - Wells Fargo</option>
+                                <option value="GS">GS - Goldman Sachs</option>
+                            </optgroup>
+                            
+                            <optgroup label="🏥 Healthcare">
+                                <option value="JNJ">JNJ - Johnson & Johnson</option>
+                                <option value="UNH">UNH - UnitedHealth Group</option>
+                                <option value="PFE">PFE - Pfizer Inc.</option>
+                                <option value="MRK">MRK - Merck & Co.</option>
+                                <option value="ABT">ABT - Abbott Laboratories</option>
+                            </optgroup>
+                            
+                            <optgroup label="🎬 Entertainment & Media">
+                                <option value="NFLX">NFLX - Netflix Inc.</option>
+                                <option value="DIS">DIS - The Walt Disney Company</option>
+                                <option value="CMCSA">CMCSA - Comcast Corporation</option>
+                                <option value="FOX">FOX - Fox Corporation</option>
+                            </optgroup>
+                            
+                            <optgroup label="⚡ Energy & Utilities">
+                                <option value="XOM">XOM - Exxon Mobil Corporation</option>
+                                <option value="CVX">CVX - Chevron Corporation</option>
+                                <option value="COP">COP - ConocoPhillips</option>
+                                <option value="NEE">NEE - NextEra Energy</option>
+                            </optgroup>
+                        </select>
+                    </div>
+                    <div class="col-md-6">
+                        <label for="customSymbol" class="form-label">Or Enter Custom Symbol</label>
+                        <div class="input-group">
+                            <input type="text" id="customSymbol" class="form-control" 
+                                   placeholder="Enter stock symbol (e.g., IBM)">
+                            <button class="btn btn-primary" onclick="loadCustomStockChart()">Load Custom</button>
+                        </div>
+                    </div>
+                </div>
+                <div class="chart-container">
+                    <canvas id="stockChart"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <div class="row">
+            <% portfolio.forEach(function(stock) { %>
+                <div class="col-md-6 mb-3">
+                    <div class="card portfolio-card">
+                        <div class="card-body">
+                            <h5 class="card-title"><%= stock.symbol %></h5>
+                            <p class="card-text">Quantity: <%= stock.quantity %></p>
+                            <p class="card-text">Purchase Price: $<%= stock.purchasePrice.toFixed(2) %></p>
+                            <p class="card-text" id="price-<%= stock.symbol %>">Loading current price...</p>
+                            <p class="card-text" id="profit-<%= stock.symbol %>">Calculating profit/loss...</p>
+                            <div class="mt-2">
+                                <a href="/portfolio/edit/<%= stock._id %>" class="btn btn-warning btn-sm me-2">Edit</a>
+                                <form action="/portfolio/delete/<%= stock._id %>" method="POST" style="display: inline;">
+                                    <button type="submit" class="btn btn-danger btn-sm">Delete</button>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            <% }); %>
+        </div>
+    </div>
+
+    <!-- Chart.js Library -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <script>
+    // Global chart instance
+    let stockChartInstance = null;
+
+    // Fetch and display live prices with profit calculation
+    const stockData = <%- JSON.stringify(portfolio) || '[]' %>;
+
+    stockData.forEach(stock => {
+        fetch('/portfolio/price/' + stock.symbol)
+            .then(response => response.json())
+            .then(data => {
+                const priceElement = document.getElementById('price-' + stock.symbol);
+                const profitElement = document.getElementById('profit-' + stock.symbol);
+                
+                if(data && data.price) {
+                    const currentPrice = data.price;
+                    const profit = (currentPrice - stock.purchasePrice) * stock.quantity;
+                    
+                    priceElement.textContent = 'Current Price: $' + currentPrice.toFixed(2);
+                    profitElement.textContent = 'Profit/Loss: $' + profit.toFixed(2);
+                    
+                    // Color code profit/loss
+                    if(profit > 0) {
+                        profitElement.className = 'card-text profit-positive';
+                    } else if(profit < 0) {
+                        profitElement.className = 'card-text profit-negative';
+                    } else {
+                        profitElement.className = 'card-text';
+                    }
+                } else {
+                    priceElement.textContent = 'Price unavailable';
+                    profitElement.textContent = 'Profit calculation failed';
+                }
+            })
+            .catch(error => {
+                console.error('Error fetching price for', stock.symbol, error);
+                document.getElementById('price-' + stock.symbol).textContent = 'Price fetch failed';
+            });
+    });
+
+    // Load chart from dropdown selection
+    async function loadStockChart() {
+        const symbol = document.getElementById('stockSymbol').value;
+        if (!symbol) return;
+        
+        await loadChartWithSymbol(symbol);
+    }
+
+    // Load chart from custom input
+    async function loadCustomStockChart() {
+        const symbol = document.getElementById('customSymbol').value.trim().toUpperCase();
+        if (!symbol) {
+            alert('Please enter a stock symbol');
+            return;
+        }
+        
+        // Add to dropdown if not already there
+        const dropdown = document.getElementById('stockSymbol');
+        const existingOption = Array.from(dropdown.options).find(opt => opt.value === symbol);
+        if (!existingOption && symbol) {
+            const newOption = new Option(`${symbol} - Custom`, symbol);
+            dropdown.add(newOption);
+            dropdown.value = symbol;
+        }
+        
+        await loadChartWithSymbol(symbol);
+    }
+
+    // Main chart loading function
+    async function loadChartWithSymbol(symbol) {
+        const chartCanvas = document.getElementById('stockChart');
+        
+        try {
+            console.log('Fetching stock data for:', symbol);
+            const response = await fetch(`/api/stocks/${symbol}`);
+            
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+            
+            const data = await response.json();
+            console.log('API Response received');
+
+            // Check if we have valid data
+            if (!data || (!data['Time Series (Daily)'] && !data.error)) {
+                throw new Error('Invalid data format from API');
+            }
+
+            if (data.error) {
+                showChartError(`API Error: ${data.error}. Using demo data.`);
+                loadDemoChart(symbol);
+                return;
+            }
+
+            const timeSeries = data['Time Series (Daily)'] || {};
+            const dates = Object.keys(timeSeries).slice(0, 30).reverse();
+            const prices = dates.map(date => 
+                parseFloat(timeSeries[date]['4. close'])
+            );
+
+            // Destroy existing chart if it exists
+            if (stockChartInstance) {
+                stockChartInstance.destroy();
+            }
+
+            // Create new chart
+            const ctx = chartCanvas.getContext('2d');
+            stockChartInstance = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: dates,
+                    datasets: [{
+                        label: `${symbol} Price`,
+                        data: prices,
+                        borderColor: '#00d09c',
+                        backgroundColor: 'rgba(0, 208, 156, 0.1)',
+                        borderWidth: 2,
+                        tension: 0.1,
+                        fill: true
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        title: { 
+                            display: true, 
+                            text: `${symbol} Stock Price (Last 30 Days)` 
+                        },
+                        legend: {
+                            display: true
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: false,
+                            ticks: {
+                                callback: function(value) {
+                                    return '$' + value.toFixed(2);
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+
+        } catch (error) {
+            console.error('Chart loading error:', error);
+            showChartError(`Failed to load chart: ${error.message}. Using demo data.`);
+            loadDemoChart(symbol);
+        }
+    }
+
+    // Demo chart fallback
+    function loadDemoChart(symbol) {
+        const ctx = document.getElementById('stockChart').getContext('2d');
+        
+        // Generate realistic demo data
+        const basePrice = 150;
+        const demoData = [];
+        const demoLabels = [];
+        
+        for (let i = 30; i >= 0; i--) {
+            const date = new Date();
+            date.setDate(date.getDate() - i);
+            demoLabels.push(date.toLocaleDateString());
+            
+            // Generate realistic price movement
+            const price = basePrice + (Math.random() - 0.5) * 20;
+            demoData.push(parseFloat(price.toFixed(2)));
+        }
+
+        if (stockChartInstance) {
+            stockChartInstance.destroy();
+        }
+
+        stockChartInstance = new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels: demoLabels,
+                datasets: [{
+                    label: `${symbol} (Demo Data)`,
+                    data: demoData,
+                    borderColor: '#ff6384',
+                    backgroundColor: 'rgba(255, 99, 132, 0.1)',
+                    borderWidth: 2,
+                    tension: 0.1,
+                    fill: true
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    title: { 
+                        display: true, 
+                        text: `${symbol} Stock Price - Demo Data` 
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: false,
+                        ticks: {
+                            callback: function(value) {
+                                return '$' + value.toFixed(2);
+                            }
+                        }
+                    }
+                }
+            }
+        });
+    }
+
+    // Show error message
+    function showChartError(message) {
+        const chartContainer = document.querySelector('.chart-container');
+        chartContainer.innerHTML = `<div class="alert alert-warning">${message}</div>` + chartContainer.innerHTML;
+    }
+
+    // Load default chart on page load
+    document.addEventListener('DOMContentLoaded', function() {
+        loadChartWithSymbol('AAPL');
+    });
+    </script>
+</body>
+</html>

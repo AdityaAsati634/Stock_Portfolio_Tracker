@@ -1,0 +1,15 @@
+body {
+    background-color: #f8f9fa;
+}
+
+.portfolio-card {
+    margin-bottom: 20px;
+}
+
+.profit-positive {
+    color: #198754;
+}
+
+.profit-negative {
+    color: #dc3545;
+}
