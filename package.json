@@ -9,7 +9,6 @@
   "keywords": [],
   "author": "",
   "license": "ISC",
-  "description": "",
   "dependencies": {
     "axios": "^1.12.2",
     "bcryptjs": "^2.4.3",
@@ -23,5 +22,14 @@
   },
   "devDependencies": {
     "nodemon": "^3.1.10"
-  }
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/AdityaAsati634/Stock_Portfolio_Tracker.git"
+  },
+  "bugs": {
+    "url": "https://github.com/AdityaAsati634/Stock_Portfolio_Tracker/issues"
+  },
+  "homepage": "https://github.com/AdityaAsati634/Stock_Portfolio_Tracker#readme",
+  "description": ""
 }
