@@ -1,40 +1,32 @@
-const passport = require("passport");
-const LocalStrategy = require("passport-local").Strategy;
-const bcrypt = require("bcrypt");
-const User = require("../models/User");
+const passport = require('passport');
+const LocalStrategy = require('passport-local').Strategy;
+const bcrypt = require('bcryptjs'); // use bcryptjs instead of bcrypt
+const User = require('../models/User');
 
-// Local Strategy
 passport.use(
   new LocalStrategy(async (username, password, done) => {
     try {
       const user = await User.findOne({ username });
-      if (!user) {
-        return done(null, false, { message: "User not found" });
-      }
+      if (!user) return done(null, false, { message: 'User not found' });
 
-      const isMatch = await bcrypt.compare(password, user.password);
-      if (!isMatch) {
-        return done(null, false, { message: "Incorrect password" });
-      }
+      // Compare hashed password
+      const isMatch = bcrypt.compareSync(password, user.password);
+      if (!isMatch) return done(null, false, { message: 'Incorrect password' });
 
       return done(null, user);
-    } catch (err) {
-      return done(err);
+    } catch (error) {
+      return done(error);
     }
   })
 );
 
-// Serialize user (store user id in session)
-passport.serializeUser((user, done) => {
-  done(null, user.id);
-});
+passport.serializeUser((user, done) => done(null, user.id));
 
-// Deserialize user (get user from id)
 passport.deserializeUser(async (id, done) => {
   try {
     const user = await User.findById(id);
     done(null, user);
-  } catch (err) {
-    done(err);
+  } catch (error) {
+    done(error);
   }
 });
